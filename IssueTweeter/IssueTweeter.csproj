@@ -105,7 +105,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Properties\PublishProfiles\DotnetIssuesTweeter.pubxml" />
+    <None Include="Properties\PublishProfiles\IssuesTweeter - Web Deploy.pubxml" />
     <None Include="Secrets.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
