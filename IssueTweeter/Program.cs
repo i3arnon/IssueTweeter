@@ -17,16 +17,19 @@ namespace IssueTweeter
         private readonly string _configurationFileName = $"{nameof(Configuration)}.json";
 
         private Configuration _configuration;
-        private GitHubClient _gitHubClient;
         private HashSet<string> _excludedAccounts;
+        private GitHubClient _gitHubClient;
 
         private static void Main() => new Program().AsyncMain().Wait();
 
         private async Task AsyncMain()
         {
             _configuration = GetConfiguration();
-            _gitHubClient = new GitHubClient(new ProductHeaderValue("DotnetIssuesTweeter"));
             _excludedAccounts = new HashSet<string>(_configuration.ExcludedAccounts);
+            _gitHubClient = new GitHubClient(new ProductHeaderValue("DotnetIssuesTweeter"))
+            {
+                Credentials = new Credentials(_configuration.GitHubToken),
+            };
 
             await _configuration.FeedConfigurations.ForEachAsync(UpdateFeed);
         }
