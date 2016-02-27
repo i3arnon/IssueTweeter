@@ -11,6 +11,9 @@ namespace IssueTweeter
 {
     internal class Program
     {
+        private const int CharactersInTweet = 140;
+        private const int CharactersInUrl = 23;
+
         private readonly string _configurationFileName = $"{nameof(Configuration)}.json";
 
         private Configuration _configuration;
@@ -41,49 +44,73 @@ namespace IssueTweeter
                 }
             });
 
-            // Get issues for each repository
-            var since = DateTime.UtcNow - TimeSpan.FromHours(1);
-            List<Task<List<KeyValuePair<string, string>>>> issuesTasks =
-                feedConfiguration.Repositories.Select(x => GetIssues(x, since)).ToList();
-            await Task.WhenAll(issuesTasks);
+            var tweetsTask = feedConfiguration.Repositories.SelectManyAsync(_ =>
+                GenerateTweets(_, DateTime.UtcNow - TimeSpan.FromHours(1)));
 
-            // Get recent tweets
-            string twitterUser = feedConfiguration.TwitterAccountConfiguration.AccountName;
-            List<Status> timeline = await twitterContext.Status
-                .Where(x => x.Type == StatusType.User && x.ScreenName == twitterUser && x.Count == 200)
+            var existingTweetsTask = twitterContext.Status
+                .Where(x =>
+                    x.Type == StatusType.User &&
+                    x.ScreenName == feedConfiguration.TwitterAccountConfiguration.AccountName &&
+                    x.Count == 200)
                 .ToListAsync();
 
-            // Aggregate and eliminate issues already tweeted
-            List<string> tweets = issuesTasks
-                .SelectMany(x => x.Result.Where(i => !timeline.Any(t => t.Text.Contains(i.Key))).Select(i => i.Value))
-                .ToList();
+            await Task.WhenAll(tweetsTask, existingTweetsTask);
 
-            // Send tweets
-            List<Task<Status>> tweetTasks = tweets.Select(x => twitterContext.TweetAsync(x)).ToList();
-            await Task.WhenAll(tweetTasks);
+            var tweets = await tweetsTask;
+            var existingTweets = await existingTweetsTask;
+
+            var newTweets = tweets.
+                Where(tweet => !existingTweets.Any(existingTweet => existingTweet.Text.Contains(tweet.Id))).
+                Select(tweet => tweet.Contents);
+
+            await newTweets.ForEachAsync(_ => twitterContext.TweetAsync(_));
         }
 
-        // Kvp = owner/repository#issue, full text of tweet
-        private async Task<List<KeyValuePair<string, string>>> GetIssues(
+        private async Task<IReadOnlyCollection<Tweet>> GenerateTweets(
             string repository,
             DateTimeOffset since)
         {
-            List<KeyValuePair<string, string>> tweets = new List<KeyValuePair<string, string>>();
-            string[] ownerName = repository.Split('\\');
-            IReadOnlyList<Issue> issues = await _gitHubClient.Issue
-                .GetAllForRepository(ownerName[0], ownerName[1], new RepositoryIssueRequest { Since = since, State = ItemState.All });
-            issues = issues.Where(x => x.CreatedAt > since && !_excludedAccounts.Contains(x.User.Login)).ToList();
-            foreach (Issue issue in issues)
-            {
-                string key = $"{repository}#{issue.Number}";
-                int remainingChars = 140 - (key.Length + 25);
-                string value = $"{(issue.Title.Length <= remainingChars ? issue.Title : issue.Title.Substring(0, remainingChars))}\r\n{key} {issue.HtmlUrl}";
-                tweets.Add(new KeyValuePair<string, string>(key, value));
-            }
-            return tweets;
+            var repositoryParts = repository.Split('\\');
+            var issues = await _gitHubClient.Issue.GetAllForRepository(
+                repositoryParts[0],
+                repositoryParts[1],
+                new RepositoryIssueRequest
+                {
+                    Since = since,
+                    State = ItemState.All
+                });
+
+            return issues.
+                Where(x => x.CreatedAt > since && !_excludedAccounts.Contains(x.User.Login)).
+                Select(issue => GenerateTweet(repository, issue)).
+                ToList();
+        }
+
+        private Tweet GenerateTweet(string repository, Issue issue)
+        {
+            var id = $"{repository}#{issue.Number}";
+            var remainingCharacters = CharactersInTweet - (id.Length + CharactersInUrl + 2);
+            var title =
+                issue.Title.Length > remainingCharacters
+                    ? issue.Title.Substring(0, remainingCharacters)
+                    : issue.Title;
+            string value = $"{title}\n{id} {issue.HtmlUrl}";
+            return new Tweet(id, value);
         }
 
         private Configuration GetConfiguration() =>
             JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(_configurationFileName));
+
+        private class Tweet
+        {
+            public string Id { get; }
+            public string Contents { get; }
+
+            public Tweet(string id, string contents)
+            {
+                Id = id;
+                Contents = contents;
+            }
+        }
     }
 }
