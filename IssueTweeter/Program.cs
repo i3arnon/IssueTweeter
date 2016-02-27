@@ -1,62 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LinqToTwitter;
+﻿using LinqToTwitter;
+using Newtonsoft.Json;
 using Octokit;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace IssueTweeter
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private readonly string _configurationFileName = $"{nameof(Configuration)}.json";
+
+        private Configuration _configuration;
+        private GitHubClient _gitHubClient;
+        private HashSet<string> _excludedAccounts;
+
+        private static void Main() => new Program().AsyncMain().Wait();
+
+        private async Task AsyncMain()
         {
-            AsyncMain().Wait();
+            _configuration = GetConfiguration();
+            _gitHubClient = new GitHubClient(new ProductHeaderValue("DotnetIssuesTweeter"));
+            _excludedAccounts = new HashSet<string>(_configuration.ExcludedAccounts);
+
+            await _configuration.FeedConfigurations.ForEachAsync(UpdateFeed);
         }
 
-        static async Task AsyncMain()
+        private async Task UpdateFeed(FeedConfiguration feedConfiguration)
         {
-            // Get repositories
-            string[] repos = ConfigurationManager.AppSettings["Repositories"]
-                .Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToArray();
-
-            // Get excluded users
-            string[] excludedUsers = ConfigurationManager.AppSettings["ExcludedUsers"]
-                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToArray();
-
-            // Authorize to GitHub
-            string token = ConfigurationManager.AppSettings["GitHubToken"];
-            GitHubClient github = new GitHubClient(new ProductHeaderValue("IssueTweeter"))
-            {
-                Credentials = new Credentials(token)
-            };
-
-            // Get issues for each repo
-            DateTimeOffset since = DateTimeOffset.UtcNow.AddHours(-1);
-            List<Task<List<KeyValuePair<string, string>>>> issuesTasks = repos.Select(x => GetIssues(github, x, since, excludedUsers)).ToList();
-            await Task.WhenAll(issuesTasks);
-
-            // Authorize to Twitter
-            SingleUserAuthorizer twitterAuth = new SingleUserAuthorizer
+            var twitterContext = new TwitterContext(new SingleUserAuthorizer
             {
                 CredentialStore = new SingleUserInMemoryCredentialStore
                 {
-                    ConsumerKey = ConfigurationManager.AppSettings["TwitterConsumerKey"],
-                    ConsumerSecret = ConfigurationManager.AppSettings["TwitterConsumerSecret"],
-                    AccessToken = ConfigurationManager.AppSettings["TwitterAccessToken"],
-                    AccessTokenSecret = ConfigurationManager.AppSettings["TwitterAccessTokenSecret"]
+                    ConsumerKey = feedConfiguration.TwitterAccountConfiguration.ConsumerKey,
+                    ConsumerSecret = feedConfiguration.TwitterAccountConfiguration.ConsumerSecret,
+                    AccessToken = feedConfiguration.TwitterAccountConfiguration.AccessToken,
+                    AccessTokenSecret = feedConfiguration.TwitterAccountConfiguration.AccessTokenSecret,
                 }
-            };
-            TwitterContext twitterContext = new TwitterContext(twitterAuth);
+            });
+
+            // Get issues for each repository
+            var since = DateTime.UtcNow - TimeSpan.FromHours(1);
+            List<Task<List<KeyValuePair<string, string>>>> issuesTasks =
+                feedConfiguration.Repositories.Select(x => GetIssues(x, since)).ToList();
+            await Task.WhenAll(issuesTasks);
 
             // Get recent tweets
-            string twitterUser = ConfigurationManager.AppSettings["TwitterUser"];
+            string twitterUser = feedConfiguration.TwitterAccountConfiguration.AccountName;
             List<Status> timeline = await twitterContext.Status
                 .Where(x => x.Type == StatusType.User && x.ScreenName == twitterUser && x.Count == 200)
                 .ToListAsync();
@@ -71,22 +63,27 @@ namespace IssueTweeter
             await Task.WhenAll(tweetTasks);
         }
 
-        // Kvp = owner/repo#issue, full text of tweet
-        static async Task<List<KeyValuePair<string, string>>> GetIssues(GitHubClient github, string repo, DateTimeOffset since, string[] excludedUsers)
+        // Kvp = owner/repository#issue, full text of tweet
+        private async Task<List<KeyValuePair<string, string>>> GetIssues(
+            string repository,
+            DateTimeOffset since)
         {
             List<KeyValuePair<string, string>> tweets = new List<KeyValuePair<string, string>>();
-            string[] ownerName = repo.Split('\\');
-            IReadOnlyList<Issue> issues = await github.Issue
-                .GetAllForRepository(ownerName[0], ownerName[1], new RepositoryIssueRequest { Since = since, State = ItemState.All});
-            issues = issues.Where(x => x.CreatedAt > since && !excludedUsers.Contains(x.User.Login)).ToList();
+            string[] ownerName = repository.Split('\\');
+            IReadOnlyList<Issue> issues = await _gitHubClient.Issue
+                .GetAllForRepository(ownerName[0], ownerName[1], new RepositoryIssueRequest { Since = since, State = ItemState.All });
+            issues = issues.Where(x => x.CreatedAt > since && !_excludedAccounts.Contains(x.User.Login)).ToList();
             foreach (Issue issue in issues)
             {
-                string key = $"{repo}#{issue.Number}";
+                string key = $"{repository}#{issue.Number}";
                 int remainingChars = 140 - (key.Length + 25);
                 string value = $"{(issue.Title.Length <= remainingChars ? issue.Title : issue.Title.Substring(0, remainingChars))}\r\n{key} {issue.HtmlUrl}";
                 tweets.Add(new KeyValuePair<string, string>(key, value));
             }
             return tweets;
         }
+
+        private Configuration GetConfiguration() =>
+            JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(_configurationFileName));
     }
 }

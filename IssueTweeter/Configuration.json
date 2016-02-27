@@ -1,0 +1,15 @@
+{
+  "ExcludedAccounts": [],
+  "FeedConfigurations": [
+    {
+      "Repositories": [],
+      "TwitterAccountConfiguration": {
+        "AccountName": "",
+        "ConsumerKey": "",
+        "ConsumerSecret": "",
+        "AccessToken": "",
+        "AccessTokenSecret": ""
+      }
+    }
+  ]
+}
