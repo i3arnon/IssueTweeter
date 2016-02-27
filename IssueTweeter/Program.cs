@@ -93,12 +93,14 @@ namespace IssueTweeter
         {
             var id = $"{repository}#{issue.Number}";
             var remainingCharacters = CharactersInTweet - (id.Length + CharactersInUrl + 2);
-            var title =
-                issue.Title.Length > remainingCharacters
-                    ? issue.Title.Substring(0, remainingCharacters)
-                    : issue.Title;
-            string value = $"{title}\n{id} {issue.HtmlUrl}";
-            return new Tweet(id, value);
+
+            var title = issue.Title.Replace(".", " .");
+            if (title.Length > remainingCharacters)
+            {
+                title = title.Substring(0, remainingCharacters);
+            }
+
+            return new Tweet(id, $"{title}\n{id} {issue.HtmlUrl}");
         }
 
         private Configuration GetConfiguration() =>
