@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace IssueTweeter
@@ -94,7 +95,7 @@ namespace IssueTweeter
             var id = $"{repository}#{issue.Number}";
             var remainingCharacters = CharactersInTweet - (id.Length + CharactersInUrl + 2);
 
-            var title = issue.Title.Replace(".", " .");
+            var title = EscapeUrl(issue.Title);
             if (title.Length > remainingCharacters)
             {
                 title = title.Substring(0, remainingCharacters);
@@ -102,6 +103,9 @@ namespace IssueTweeter
 
             return new Tweet(id, $"{title}\n{id} {issue.HtmlUrl}");
         }
+
+        private string EscapeUrl(string value) =>
+            Regex.Replace(value, ".net", _ => $" {_.Value}", RegexOptions.IgnoreCase);
 
         private Configuration GetConfiguration() =>
             JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(_configurationFileName));
