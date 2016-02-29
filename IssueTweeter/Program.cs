@@ -95,10 +95,10 @@ namespace IssueTweeter
             var id = $"{repository}#{issue.Number}";
             var remainingCharacters = CharactersInTweet - (id.Length + CharactersInUrl + 2);
 
-            var title = EscapeUrl(issue.Title);
+            var title = EscapeUrl(issue.Title.Trim());
             if (title.Length > remainingCharacters)
             {
-                title = title.Substring(0, remainingCharacters);
+                title = $"{title.Substring(0, remainingCharacters - 1)}…";
             }
 
             return new Tweet(id, $"{title}\n{id} {issue.HtmlUrl}");
