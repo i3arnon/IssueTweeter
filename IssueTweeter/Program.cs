@@ -105,7 +105,7 @@ namespace IssueTweeter
         }
 
         private string EscapeUrl(string value) =>
-            Regex.Replace(value, @"\.net", _ => $" {_.Value}", RegexOptions.IgnoreCase);
+            Regex.Replace(value, @"\.net\b", _ => $" {_.Value}", RegexOptions.IgnoreCase);
 
         private Configuration GetConfiguration() =>
             JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(_configurationFileName));
