@@ -1,16 +1,91 @@
 {
-  "ExcludedAccounts": [],
+  "ExcludedAccounts": [
+    "dotnet-bot"
+  ],
   "FeedConfigurations": [
     {
-      "Repositories": [],
+      "Repositories": [
+        "aspnet\\dnx",
+        "aspnet\\Routing",
+        "aspnet\\Hosting",
+        "aspnet\\Identity",
+        "aspnet\\Razor",
+        "aspnet\\Security",
+        "aspnet\\Mvc",
+        "aspnet\\DependencyInjection",
+        "aspnet\\Logging",
+        "aspnet\\Configuration",
+        "aspnet\\HttpAbstractions",
+        "aspnet\\Announcements"
+      ],
       "TwitterAccountConfiguration": {
-        "AccountName": "",
-        "ConsumerKey": "",
-        "ConsumerSecret": "",
-        "AccessToken": "",
-        "AccessTokenSecret": ""
+        "AccountName": "aspnetissues",
+        "ConsumerKey": null,
+        "ConsumerSecret": null,
+        "AccessToken": null,
+        "AccessTokenSecret": null
+      }
+    },
+    {
+      "Repositories": [
+        "dotnet\\coreclr"
+      ],
+      "TwitterAccountConfiguration": {
+        "AccountName": "coreclrissues",
+        "ConsumerKey": null,
+        "ConsumerSecret": null,
+        "AccessToken": null,
+        "AccessTokenSecret": null
+      }
+    },
+    {
+      "Repositories": [
+        "dotnet\\corefx"
+      ],
+      "TwitterAccountConfiguration": {
+        "AccountName": "corefxissues",
+        "ConsumerKey": null,
+        "ConsumerSecret": null,
+        "AccessToken": null,
+        "AccessTokenSecret": null
+      }
+    },
+    {
+      "Repositories": [
+        "dotnet\\corefxlab"
+      ],
+      "TwitterAccountConfiguration": {
+        "AccountName": "corefxlabissues",
+        "ConsumerKey": null,
+        "ConsumerSecret": null,
+        "AccessToken": null,
+        "AccessTokenSecret": null
+      }
+    },
+    {
+      "Repositories": [
+        "aspnet\\EntityFramework"
+      ],
+      "TwitterAccountConfiguration": {
+        "AccountName": "efissues",
+        "ConsumerKey": null,
+        "ConsumerSecret": null,
+        "AccessToken": null,
+        "AccessTokenSecret": null
+      }
+    },
+    {
+      "Repositories": [
+        "dotnet\\roslyn"
+      ],
+      "TwitterAccountConfiguration": {
+        "AccountName": "roslynissues",
+        "ConsumerKey": null,
+        "ConsumerSecret": null,
+        "AccessToken": null,
+        "AccessTokenSecret": null
       }
     }
   ],
-  "GitHubToken": ""
+  "GitHubToken": null
 }
