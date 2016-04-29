@@ -22,9 +22,9 @@ namespace IssueTweeter
         private HashSet<string> _excludedAccounts;
         private GitHubClient _gitHubClient;
 
-        private static void Main() => new Program().AsyncMain().Wait();
+        private static void Main() => new Program().MainAsync().GetAwaiter().GetResult();
 
-        private async Task AsyncMain()
+        private async Task MainAsync()
         {
             _configuration = GetConfiguration();
             _excludedAccounts = new HashSet<string>(_configuration.ExcludedAccounts);
@@ -53,10 +53,10 @@ namespace IssueTweeter
                 GenerateTweets(_, DateTime.UtcNow - TimeSpan.FromHours(1)));
 
             var existingTweetsTask = twitterContext.Status
-                .Where(x =>
-                    x.Type == StatusType.User &&
-                    x.ScreenName == feedConfiguration.TwitterAccountConfiguration.AccountName &&
-                    x.Count == 200)
+                .Where(_ =>
+                    _.Type == StatusType.User &&
+                    _.ScreenName == feedConfiguration.TwitterAccountConfiguration.AccountName &&
+                    _.Count == 200)
                 .ToListAsync();
 
             await Task.WhenAll(tweetsTask, existingTweetsTask);
@@ -65,10 +65,10 @@ namespace IssueTweeter
             var existingTweets = await existingTweetsTask;
 
             var newTweets = tweets.
-                Where(tweet => !existingTweets.Any(existingTweet => existingTweet.Text.Contains(tweet.Id))).
-                Select(tweet => tweet.Contents);
+                Where(_ => !existingTweets.Any(existingTweet => existingTweet.Text.Contains(_.Id))).
+                Select(_ => _.Contents);
 
-            await newTweets.ForEachAsync(_ => twitterContext.TweetAsync(_));
+            await newTweets.ForEachAsync(twitterContext.TweetAsync);
         }
 
         private async Task<IReadOnlyCollection<Tweet>> GenerateTweets(
@@ -86,8 +86,8 @@ namespace IssueTweeter
                 });
 
             return issues.
-                Where(x => x.CreatedAt > since && !_excludedAccounts.Contains(x.User.Login)).
-                Select(issue => GenerateTweet(repository, issue)).
+                Where(_ => _.CreatedAt > since && !_excludedAccounts.Contains(_.User.Login)).
+                Select(_ => GenerateTweet(repository, _)).
                 ToList();
         }
 
