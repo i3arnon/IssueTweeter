@@ -1,4 +1,5 @@
 ﻿using LinqToTwitter;
+using MoreLinq;
 using Newtonsoft.Json;
 using Octokit;
 using System;
@@ -93,9 +94,19 @@ namespace IssueTweeter
         private Tweet GenerateTweet(string repository, Issue issue)
         {
             var id = $"{repository}#{issue.Number}";
-            var remainingCharacters = CharactersInTweet - (id.Length + CharactersInUrl + 2);
+            var remainingCharacters = CharactersInTweet - (id.Length + 2 + CharactersInUrl);
 
-            var title = EscapeUrl(issue.Title.Trim());
+            var title = issue.Title.Trim();
+            Regex.Matches(title, @"\w+(\.\w+)+").
+                Cast<Match>().
+                Select(match => match.Value.
+                    Split('.').
+                    Select(substring => substring.Length).
+                    Pairwise((previous, current) => previous + current).
+                    Min()).
+                Where(minUrlLength => minUrlLength < CharactersInUrl).
+                ForEach(minUrlLength => remainingCharacters -= CharactersInUrl - minUrlLength);
+
             if (title.Length > remainingCharacters)
             {
                 title = $"{title.Substring(0, remainingCharacters - 1)}…";
@@ -103,9 +114,6 @@ namespace IssueTweeter
 
             return new Tweet(id, $"{title}\n{id} {issue.HtmlUrl}");
         }
-
-        private string EscapeUrl(string value) =>
-            Regex.Replace(value, @"\S\.net\b($|\s)", _ => _.Value.Replace(".", " ."), RegexOptions.IgnoreCase);
 
         private Configuration GetConfiguration() =>
             JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(_configurationFileName));
@@ -120,6 +128,8 @@ namespace IssueTweeter
                 Id = id;
                 Contents = contents;
             }
+
+            public override string ToString() => Contents;
         }
     }
 }
