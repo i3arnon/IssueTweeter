@@ -97,6 +97,8 @@ namespace IssueTweeter
             var remainingCharacters = CharactersInTweet - (id.Length + 2 + CharactersInUrl);
 
             var title = issue.Title.Trim();
+            title = EnforceLength(title, remainingCharacters);
+
             Regex.Matches(title, @"\w+(\.\w+)+").
                 Cast<Match>().
                 Select(match => match.Value.
@@ -106,14 +108,15 @@ namespace IssueTweeter
                     Min()).
                 Where(minUrlLength => minUrlLength < CharactersInUrl).
                 ForEach(minUrlLength => remainingCharacters -= CharactersInUrl - minUrlLength);
-
-            if (title.Length > remainingCharacters)
-            {
-                title = $"{title.Substring(0, remainingCharacters - 1)}…";
-            }
+            title = EnforceLength(title, remainingCharacters);
 
             return new Tweet(id, $"{title}\n{id} {issue.HtmlUrl}");
         }
+
+        private string EnforceLength(string value, int length) =>
+            value.Length > length
+                ? $"{value.Substring(0, length - 1)}…"
+                : value;
 
         private Configuration GetConfiguration() =>
             JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(_configurationFileName));
