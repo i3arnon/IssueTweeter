@@ -85,6 +85,18 @@
         "AccessToken": null,
         "AccessTokenSecret": null
       }
+    },
+    {
+      "Repositories": [
+        "dotnet\\roslyn-project-system"
+      ],
+      "TwitterAccountConfiguration": {
+        "AccountName": "roslynissuespro",
+        "ConsumerKey": null,
+        "ConsumerSecret": null,
+        "AccessToken": null,
+        "AccessTokenSecret": null
+      }
     }
   ],
   "GitHubToken": null
