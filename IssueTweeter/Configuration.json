@@ -91,7 +91,7 @@
         "dotnet\\roslyn-project-system"
       ],
       "TwitterAccountConfiguration": {
-        "AccountName": "roslynissuespro",
+        "AccountName": "roslynproissues",
         "ConsumerKey": null,
         "ConsumerSecret": null,
         "AccessToken": null,
