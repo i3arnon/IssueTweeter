@@ -1,12 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.IO;
 
 namespace IssueTweeter
 {
     public sealed class Configuration
     {
+        private static readonly string _configurationFileName = $"{nameof(Configuration)}.json";
+
         public IReadOnlyCollection<string> ExcludedAccounts { get; set; }
         public IReadOnlyCollection<FeedConfiguration> FeedConfigurations { get; set; }
         public string GitHubToken { get; set; }
+
+        public static Configuration GetConfiguration() =>
+           JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(_configurationFileName));
     }
 
     public sealed class FeedConfiguration

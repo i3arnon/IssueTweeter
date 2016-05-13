@@ -1,10 +1,8 @@
 ﻿using LinqToTwitter;
 using MoreLinq;
-using Newtonsoft.Json;
 using Octokit;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -16,8 +14,6 @@ namespace IssueTweeter
         private const int CharactersInTweet = 140;
         private const int CharactersInUrl = 23;
 
-        private readonly string _configurationFileName = $"{nameof(Configuration)}.json";
-
         private Configuration _configuration;
         private HashSet<string> _excludedAccounts;
         private GitHubClient _gitHubClient;
@@ -26,7 +22,7 @@ namespace IssueTweeter
 
         private async Task MainAsync()
         {
-            _configuration = GetConfiguration();
+            _configuration = Configuration.GetConfiguration();
             _excludedAccounts = new HashSet<string>(_configuration.ExcludedAccounts);
             _gitHubClient = new GitHubClient(new ProductHeaderValue("DotnetIssuesTweeter"))
             {
@@ -117,9 +113,6 @@ namespace IssueTweeter
             value.Length > length
                 ? $"{value.Substring(0, length - 1)}…"
                 : value;
-
-        private Configuration GetConfiguration() =>
-            JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(_configurationFileName));
 
         private class Tweet
         {
