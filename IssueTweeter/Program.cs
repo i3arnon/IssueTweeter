@@ -78,7 +78,7 @@ namespace IssueTweeter
                 new RepositoryIssueRequest
                 {
                     Since = since,
-                    State = ItemState.All
+                    State = ItemStateFilter.All
                 });
 
             return issues.
