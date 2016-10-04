@@ -17,6 +17,7 @@
         "aspnet\\Logging",
         "aspnet\\Configuration",
         "aspnet\\HttpAbstractions",
+        "aspnet\\WebListener",
         "aspnet\\Announcements"
       ],
       "TwitterAccountConfiguration": {
