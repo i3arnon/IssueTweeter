@@ -6,18 +6,18 @@
   "FeedConfigurations": [
     {
       "Repositories": [
-        "aspnet\\Routing",
-        "aspnet\\Hosting",
-        "aspnet\\Identity",
-        "aspnet\\Razor",
-        "aspnet\\Security",
-        "aspnet\\Mvc",
-        "aspnet\\DependencyInjection",
-        "aspnet\\Logging",
+        "aspnet\\Announcements",
         "aspnet\\Configuration",
+        "aspnet\\DependencyInjection",
+        "aspnet\\Hosting",
         "aspnet\\HttpAbstractions",
-        "aspnet\\WebListener",
-        "aspnet\\Announcements"
+        "aspnet\\Identity",
+        "aspnet\\Logging",
+        "aspnet\\Mvc",
+        "aspnet\\Razor",
+        "aspnet\\Routing",
+        "aspnet\\Security",
+        "aspnet\\WebListener"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "aspnetissues",
