@@ -6,7 +6,6 @@
   "FeedConfigurations": [
     {
       "Repositories": [
-        "aspnet\\dnx",
         "aspnet\\Routing",
         "aspnet\\Hosting",
         "aspnet\\Identity",
