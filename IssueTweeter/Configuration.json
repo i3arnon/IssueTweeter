@@ -7,6 +7,7 @@
     {
       "Repositories": [
         "aspnet\\Announcements",
+        "aspnet\\AspLabs",
         "aspnet\\Configuration",
         "aspnet\\DependencyInjection",
         "aspnet\\Hosting",
