@@ -80,7 +80,9 @@
     },
     {
       "Repositories": [
-        "dotnet\\roslyn"
+        "dotnet\\csharplang",
+        "dotnet\\roslyn",
+        "dotnet\\vblang"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "roslynissues",
