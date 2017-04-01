@@ -44,8 +44,10 @@
     },
     {
       "Repositories": [
+        "dotnet\\announcements",
         "dotnet\\cli",
-        "dotnet\\corefx"
+        "dotnet\\corefx",
+        "dotnet\\standard"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "corefxissues",
@@ -95,7 +97,7 @@
     },
     {
       "Repositories": [
-        "dotnet\\roslyn-project-system"
+        "dotnet\\project-system"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "roslynproissues",
