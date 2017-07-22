@@ -47,6 +47,7 @@
         "dotnet\\announcements",
         "dotnet\\cli",
         "dotnet\\corefx",
+        "dotnet\\designs",
         "dotnet\\standard"
       ],
       "TwitterAccountConfiguration": {
@@ -59,6 +60,7 @@
     },
     {
       "Repositories": [
+        "dotnet\\apireviews",
         "dotnet\\corefxlab"
       ],
       "TwitterAccountConfiguration": {
