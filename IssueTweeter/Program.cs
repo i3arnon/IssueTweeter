@@ -11,7 +11,7 @@ namespace IssueTweeter
 {
     internal class Program
     {
-        private const int CharactersInTweet = 140;
+        private const int CharactersInTweet = 280;
         private const int CharactersInUrl = 23;
 
         private Configuration _configuration;
