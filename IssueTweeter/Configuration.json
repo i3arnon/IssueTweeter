@@ -1,6 +1,7 @@
 {
   "ExcludedAccounts": [
     "dotnet-bot",
+    "dotnet-maestro-bot",
     "dotnet-mc-bot"
   ],
   "FeedConfigurations": [
