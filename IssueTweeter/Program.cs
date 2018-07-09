@@ -9,18 +9,21 @@ using System.Threading.Tasks;
 
 namespace IssueTweeter
 {
-    internal class Program
+    internal static class Program
     {
+        private const int BacklogHours = 2;
         private const int CharactersInTweet = 280;
         private const int CharactersInUrl = 23;
+        private const string Ellipsis = "…";
+        private const string FooterSeparator = " ";
+        private const int MaxTweets = 5;
+        private const string NewLineSeparator = "\n";
 
-        private Configuration _configuration;
-        private HashSet<string> _excludedAccounts;
-        private GitHubClient _gitHubClient;
+        private static Configuration _configuration;
+        private static HashSet<string> _excludedAccounts;
+        private static GitHubClient _gitHubClient;
 
-        private static void Main() => new Program().MainAsync().GetAwaiter().GetResult();
-
-        private async Task MainAsync()
+        private static async Task Main()
         {
             _configuration = Configuration.GetConfiguration();
             _excludedAccounts = new HashSet<string>(_configuration.ExcludedAccounts);
@@ -29,10 +32,13 @@ namespace IssueTweeter
                 Credentials = new Credentials(_configuration.GitHubToken),
             };
 
-            await _configuration.FeedConfigurations.ForEachAsync(UpdateFeed);
+            foreach (var feedConfiguration in _configuration.FeedConfigurations)
+            {
+                await UpdateFeedAsync(feedConfiguration);
+            }
         }
 
-        private async Task UpdateFeed(FeedConfiguration feedConfiguration)
+        private static async Task UpdateFeedAsync(FeedConfiguration feedConfiguration)
         {
             var twitterContext = new TwitterContext(new SingleUserAuthorizer
             {
@@ -45,36 +51,61 @@ namespace IssueTweeter
                 }
             });
 
-            var tweetsTask = feedConfiguration.Repositories.SelectManyAsync(_ =>
-                GenerateTweets(_, DateTime.UtcNow - TimeSpan.FromHours(1)));
+            var tweetsTask =
+                feedConfiguration.Repositories.SelectManyAsync(_ =>
+                    GenerateTweetsAsync(_, DateTime.UtcNow - TimeSpan.FromHours(BacklogHours)));
 
-            var existingTweetsTask = twitterContext.Status
-                .Where(_ =>
-                    _.Type == StatusType.User &&
-                    _.ScreenName == feedConfiguration.TwitterAccountConfiguration.AccountName &&
-                    _.Count == 200)
-                .ToListAsync();
+            var existingTweets =
+                await twitterContext.Status
+                    .Where(_ =>
+                        _.Type == StatusType.User &&
+                        _.ScreenName == feedConfiguration.TwitterAccountConfiguration.AccountName &&
+                        _.Count == 200)
+                    .ToListAsync();
 
-            await Task.WhenAll(tweetsTask, existingTweetsTask);
+            var existingIds = new HashSet<string>();
+            var existingTitlePrefixes = new List<string>();
+            foreach (var existingTweet in existingTweets.Select(_ => _.Text))
+            {
+                if (existingTweet.Contains(NewLineSeparator))
+                {
+                    var parts = existingTweet.Split(NewLineSeparator, 2);
+                    var footer = parts[1];
+                    if (footer.Contains(Ellipsis))
+                    {
+                        existingTitlePrefixes.Add(parts[0]);
+                    }
+                    else
+                    {
+                        existingIds.Add(footer.Split(FooterSeparator, 2)[0]);
+                    }
+                }
+                else
+                {
+                    existingTitlePrefixes.Add(existingTweet.Split(Ellipsis, 2)[0]);
+                }
+            }
 
             var tweets = await tweetsTask;
-            var existingTweets = await existingTweetsTask;
-
             var newTweets = tweets.
-                Where(_ => !existingTweets.Any(existingTweet => existingTweet.Text.Contains(_.Id))).
-                Select(_ => _.Contents);
+                Where(_ => !existingIds.Contains(_.Id) && 
+                           !existingTitlePrefixes.Any(prefix => _.Title.StartsWith(prefix))).
+                Take(MaxTweets);
 
-            await newTweets.ForEachAsync(twitterContext.TweetAsync);
+            foreach (var newTweet in newTweets)
+            {
+                await twitterContext.TweetAsync(newTweet.ToString());
+            }
         }
 
-        private async Task<IReadOnlyCollection<Tweet>> GenerateTweets(
+        private static async Task<IReadOnlyCollection<Tweet>> GenerateTweetsAsync(
             string repository,
             DateTimeOffset since)
         {
-            var repositoryParts = repository.Split('\\');
+            var parts = repository.Split('\\');
             var issues = await _gitHubClient.Issue.GetAllForRepository(
-                repositoryParts[0],
-                repositoryParts[1],
+                parts[0],
+                parts[1],
                 new RepositoryIssueRequest
                 {
                     Since = since,
@@ -87,7 +118,7 @@ namespace IssueTweeter
                 ToList();
         }
 
-        private Tweet GenerateTweet(string repository, Issue issue)
+        private static Tweet GenerateTweet(string repository, Issue issue)
         {
             var id = $"{repository}#{issue.Number}";
             var remainingCharacters = CharactersInTweet - (id.Length + 2 + CharactersInUrl);
@@ -106,26 +137,30 @@ namespace IssueTweeter
                 ForEach(minUrlLength => remainingCharacters -= CharactersInUrl - minUrlLength);
             title = EnforceLength(title, remainingCharacters);
 
-            return new Tweet(id, $"{title}\n{id} {issue.HtmlUrl}");
+            return new Tweet(id, title, issue.HtmlUrl);
         }
 
-        private string EnforceLength(string value, int length) =>
+        private static string EnforceLength(string value, int length) =>
             value.Length > length
-                ? $"{value.Substring(0, length - 1)}…"
+                ? $"{value.Substring(0, length - 1)}{Ellipsis}"
                 : value;
 
         private class Tweet
         {
-            public string Id { get; }
-            public string Contents { get; }
+            private readonly string _url;
 
-            public Tweet(string id, string contents)
+            public string Id { get; }
+            public string Title { get; }
+
+            public Tweet(string id, string title, string url)
             {
                 Id = id;
-                Contents = contents;
+                Title = title;
+                _url = url;
             }
 
-            public override string ToString() => Contents;
+            public override string ToString() =>
+                $"{Title}{NewLineSeparator}{Id}{FooterSeparator}{_url}";
         }
     }
 }
