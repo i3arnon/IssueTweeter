@@ -10,18 +10,28 @@
         "aspnet\\Announcements",
         "aspnet\\AspLabs",
         "aspnet\\AspNetCoreModule",
+        "aspnet\\Blazor",
+        "aspnet\\Caching",
+        "aspnet\\Common",
         "aspnet\\Configuration",
         "aspnet\\DependencyInjection",
+        "aspnet\\DotNetTools",
+        "aspnet\\Entropy",
         "aspnet\\Hosting",
         "aspnet\\HttpAbstractions",
         "aspnet\\Identity",
+        "aspnet\\KestrelHttpServer",
         "aspnet\\Logging",
         "aspnet\\Mvc",
         "aspnet\\Razor",
         "aspnet\\Routing",
         "aspnet\\Security",
+        "aspnet\\Session",
         "aspnet\\SignalR",
-        "aspnet\\WebListener"
+        "aspnet\\StaticFiles",
+        "aspnet\\WebHooks",
+        "aspnet\\WebListener",
+        "aspnet\\WebSockets"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "aspnetissues",
@@ -46,6 +56,8 @@
     {
       "Repositories": [
         "dotnet\\announcements",
+        "dotnet\\apireviews",
+        "dotnet\\buildtools",
         "dotnet\\cli",
         "dotnet\\corefx",
         "dotnet\\designs",
@@ -61,7 +73,6 @@
     },
     {
       "Repositories": [
-        "dotnet\\apireviews",
         "dotnet\\corefxlab"
       ],
       "TwitterAccountConfiguration": {
