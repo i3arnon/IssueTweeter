@@ -10,7 +10,8 @@ namespace IssueTweeter
 
         public IReadOnlyCollection<string> ExcludedAccounts { get; set; }
         public IReadOnlyCollection<FeedConfiguration> FeedConfigurations { get; set; }
-        public string GitHubToken { get; set; }
+        public string GitHubClientId { get; set; }
+        public string GitHubClientSecret { get; set; }
 
         public static Configuration GetConfiguration() =>
            JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(_configurationFileName));

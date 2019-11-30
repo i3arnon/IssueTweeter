@@ -1,37 +1,17 @@
 {
   "ExcludedAccounts": [
     "dotnet-bot",
+    "dotnet-gitsync-bot",
     "dotnet-maestro-bot",
     "dotnet-mc-bot"
   ],
   "FeedConfigurations": [
     {
       "Repositories": [
-        "aspnet\\Announcements",
-        "aspnet\\AspLabs",
-        "aspnet\\AspNetCoreModule",
-        "aspnet\\Blazor",
-        "aspnet\\Caching",
-        "aspnet\\Common",
-        "aspnet\\Configuration",
-        "aspnet\\DependencyInjection",
-        "aspnet\\DotNetTools",
-        "aspnet\\Entropy",
-        "aspnet\\Hosting",
-        "aspnet\\HttpAbstractions",
-        "aspnet\\Identity",
-        "aspnet\\KestrelHttpServer",
-        "aspnet\\Logging",
-        "aspnet\\Mvc",
-        "aspnet\\Razor",
-        "aspnet\\Routing",
-        "aspnet\\Security",
-        "aspnet\\Session",
-        "aspnet\\SignalR",
-        "aspnet\\StaticFiles",
-        "aspnet\\WebHooks",
-        "aspnet\\WebListener",
-        "aspnet\\WebSockets"
+        "aspnet/Announcements",
+        "aspnet/AspLabs",
+        "aspnet/AspNetCore",
+        "aspnet/Benchmarks"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "aspnetissues",
@@ -43,7 +23,7 @@
     },
     {
       "Repositories": [
-        "dotnet\\coreclr"
+        "dotnet/coreclr"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "coreclrissues",
@@ -55,13 +35,12 @@
     },
     {
       "Repositories": [
-        "dotnet\\announcements",
-        "dotnet\\apireviews",
-        "dotnet\\buildtools",
-        "dotnet\\cli",
-        "dotnet\\corefx",
-        "dotnet\\designs",
-        "dotnet\\standard"
+        "dotnet/runtime",
+        "dotnet/announcements",
+        "dotnet/apireviews",
+        "dotnet/corefx",
+        "dotnet/designs",
+        "dotnet/standard"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "corefxissues",
@@ -73,7 +52,7 @@
     },
     {
       "Repositories": [
-        "dotnet\\corefxlab"
+        "dotnet/corefxlab"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "corefxlabissues",
@@ -85,7 +64,7 @@
     },
     {
       "Repositories": [
-        "aspnet\\EntityFrameworkCore"
+        "aspnet/EntityFrameworkCore"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "efissues",
@@ -97,9 +76,9 @@
     },
     {
       "Repositories": [
-        "dotnet\\csharplang",
-        "dotnet\\roslyn",
-        "dotnet\\vblang"
+        "dotnet/csharplang",
+        "dotnet/roslyn",
+        "dotnet/vblang"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "roslynissues",
@@ -111,7 +90,7 @@
     },
     {
       "Repositories": [
-        "dotnet\\project-system"
+        "dotnet/project-system"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "roslynproissues",
@@ -122,5 +101,6 @@
       }
     }
   ],
-  "GitHubToken": null
+  "GitHubClientId": null,
+  "GitHubClientSecret": null
 }

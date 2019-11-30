@@ -27,10 +27,13 @@ namespace IssueTweeter
         {
             _configuration = Configuration.GetConfiguration();
             _excludedAccounts = new HashSet<string>(_configuration.ExcludedAccounts);
-            _gitHubClient = new GitHubClient(new ProductHeaderValue("DotnetIssuesTweeter"))
-            {
-                Credentials = new Credentials(_configuration.GitHubToken),
-            };
+            _gitHubClient =
+                new GitHubClient(new ProductHeaderValue("DotnetIssuesTweeter"))
+                {
+                    Credentials = new Credentials(
+                        _configuration.GitHubClientId,
+                        _configuration.GitHubClientSecret)
+                };
 
             foreach (var feedConfiguration in _configuration.FeedConfigurations)
             {
@@ -51,8 +54,8 @@ namespace IssueTweeter
                 }
             });
 
-            var tweetsTask =
-                feedConfiguration.Repositories.SelectManyAsync(_ =>
+            var tweets =
+                await feedConfiguration.Repositories.SelectManyAsync(_ =>
                     GenerateTweetsAsync(_, DateTime.UtcNow - TimeSpan.FromHours(BacklogHours)));
 
             var existingTweets =
@@ -86,7 +89,6 @@ namespace IssueTweeter
                 }
             }
 
-            var tweets = await tweetsTask;
             var newTweets = tweets.
                 Where(_ => !existingIds.Contains(_.Id) && 
                            !existingTitlePrefixes.Any(prefix => _.Title.StartsWith(prefix))).
@@ -102,7 +104,7 @@ namespace IssueTweeter
             string repository,
             DateTimeOffset since)
         {
-            var parts = repository.Split('\\');
+            var parts = repository.Split('/');
             var issues = await _gitHubClient.Issue.GetAllForRepository(
                 parts[0],
                 parts[1],
@@ -120,7 +122,7 @@ namespace IssueTweeter
 
         private static Tweet GenerateTweet(string repository, Issue issue)
         {
-            var id = $"{repository}#{issue.Number}";
+            var id = $"{repository} #{issue.Number}";
             var remainingCharacters = CharactersInTweet - (id.Length + 2 + CharactersInUrl);
 
             var title = issue.Title.Trim();
