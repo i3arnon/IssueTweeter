@@ -59,7 +59,7 @@
     },
     {
       "Repositories": [
-        "aspnet/EntityFrameworkCore"
+        "dotnet/efcore"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "efissues",
