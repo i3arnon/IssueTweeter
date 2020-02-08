@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using AccountType = Octokit.AccountType;
 
 namespace IssueTweeter
 {
@@ -20,13 +21,11 @@ namespace IssueTweeter
         private const string NewLineSeparator = "\n";
 
         private static Configuration _configuration;
-        private static HashSet<string> _excludedAccounts;
         private static GitHubClient _gitHubClient;
 
         private static async Task Main()
         {
             _configuration = Configuration.GetConfiguration();
-            _excludedAccounts = new HashSet<string>(_configuration.ExcludedAccounts);
             _gitHubClient =
                 new GitHubClient(new ProductHeaderValue("DotnetIssuesTweeter"))
                 {
@@ -35,10 +34,22 @@ namespace IssueTweeter
                         _configuration.GitHubClientSecret)
                 };
 
+            var tasks = new List<Task>();
             foreach (var feedConfiguration in _configuration.FeedConfigurations)
             {
-                await UpdateFeedAsync(feedConfiguration);
+                var task = UpdateFeedAsync(feedConfiguration);
+                tasks.Add(task);
+
+                try
+                {
+                    await task;
+                }
+                catch
+                {
+                }
             }
+
+            await Task.WhenAll(tasks);
         }
 
         private static async Task UpdateFeedAsync(FeedConfiguration feedConfiguration)
@@ -97,6 +108,8 @@ namespace IssueTweeter
             foreach (var newTweet in newTweets)
             {
                 await twitterContext.TweetAsync(newTweet.ToString());
+
+                await Task.Delay(TimeSpan.FromSeconds(30));
             }
         }
 
@@ -115,7 +128,7 @@ namespace IssueTweeter
                 });
 
             return issues.
-                Where(_ => _.CreatedAt > since && !_excludedAccounts.Contains(_.User.Login)).
+                Where(_ => _.CreatedAt > since && _.User.Type != AccountType.Bot).
                 Select(_ => GenerateTweet(repository, _)).
                 ToList();
         }

@@ -1,17 +1,11 @@
 {
-  "ExcludedAccounts": [
-    "dotnet-bot",
-    "dotnet-gitsync-bot",
-    "dotnet-maestro-bot",
-    "dotnet-mc-bot"
-  ],
   "FeedConfigurations": [
     {
       "Repositories": [
         "aspnet/Announcements",
         "aspnet/AspLabs",
-        "aspnet/AspNetCore",
-        "aspnet/Benchmarks"
+        "aspnet/Benchmarks",
+        "dotnet/AspNetCore"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "aspnetissues",
@@ -23,7 +17,7 @@
     },
     {
       "Repositories": [
-        "dotnet/coreclr"
+        "dotnet/runtime"
       ],
       "TwitterAccountConfiguration": {
         "AccountName": "coreclrissues",
@@ -35,15 +29,16 @@
     },
     {
       "Repositories": [
-        "dotnet/runtime",
         "dotnet/announcements",
         "dotnet/apireviews",
-        "dotnet/corefx",
         "dotnet/designs",
+        "dotnet/extensions",
+        "dotnet/performance",
+        "dotnet/runtime",
         "dotnet/standard"
       ],
       "TwitterAccountConfiguration": {
-        "AccountName": "corefxissues",
+        "AccountName": "runtimeissues",
         "ConsumerKey": null,
         "ConsumerSecret": null,
         "AccessToken": null,
